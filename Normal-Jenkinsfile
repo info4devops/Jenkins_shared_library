@@ -87,13 +87,34 @@ pipeline{
 
     }
     post {
-    always {
-        echo 'Slack Notifications'
-        slackSend (
-            channel: '#channel name',   #change your channel name
-            color: COLOR_MAP[currentBuild.currentResult],
-            message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} \n build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
-        )
+        always {
+            script {
+                echo 'Sending Slack Notifications 📢'
+
+                // Define a better formatted Slack message
+                def slackMessage = """
+--------------------------------------
+📣 *${currentBuild.currentResult}* - Jenkins Job Notification
+--------------------------------------
+
+*Job Name:* `${env.JOB_NAME}`
+*Build Number:* `${env.BUILD_NUMBER}`
+*Action Selected:* `${params.action}`
+
+🔗 *Details:* <${env.BUILD_URL}|Click here to view the build>
+
+🕒 *Date & Time:* `${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}`
+
+--------------------------------------
+"""
+
+                // Send Slack notification
+                slackSend(
+                    channel: '#jenkins-youtube', // Change to your Slack channel name
+                    color: COLOR_MAP.get(currentBuild.currentResult, 'warning'), // Default to 'warning' if result is unknown
+                    message: slackMessage
+                )
+            }
+        }
     }
-}
 }
